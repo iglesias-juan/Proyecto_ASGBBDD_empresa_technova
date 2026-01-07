@@ -415,13 +415,57 @@ WHERE nombre = 'Santiago Perea';
   --? Crea un índice llamado idx_empleados_edad sobre la columna edad de la tabla empleados.
   --? Realiza una consulta que agrupe por edad y observa (si tu SGBD lo permite) el plan de ejecución antes y despuñes de crear el índice.
 
+-- Consulta sin índice y explicación:
+EXPLAIN
+SELECT edad, COUNT(*) AS total
+FROM empleados
+GROUP BY edad;
 
+-- Creación del índice:
+CREATE INDEX idx_empleados_edad
+ON empleados(edad);
+
+-- Consulta con el índice:
+EXPLAIN
+SELECT edad, COUNT(*) AS total
+FROM empleados
+GROUP BY edad;
+
+--* La diferencia en la utilización de índices en bases de datos con tablas tan pequeñas no es observable en términos de tiempo de ejecución de las diferentes consultas, pero sí puede apreciarse en cuanto al plan de ejecución.
 
 --? 2. Índice en salario para consultas de rango:
   --? Crea un índice idx_empleados_salario sobre la columna salario.
   --? Ejecuta varias consultas que filtren por rangos de salario (por ejemplo, WHERE salario BETWEEN 1500 AND 2500) y observa la mejora.
 
+-- Consulta sin índice y explicación:
+EXPLAIN
+SELECT id, nombre, direccion, salario
+FROM empleados
+WHERE salario BETWEEN 3000 AND 3500;
 
+-- Creación del índice:
+CREATE INDEX idx_empleados_salario
+ON empleados(salario);
+
+--* SHOW INDEX FROM empleados;
+--* Para comporobar si los índices sobre la tabla "empleados" se han creado correctamente.
+
+-- Consulta con el índice:
+EXPLAIN
+SELECT id, nombre, direccion, salario
+FROM empleados
+WHERE salario BETWEEN 3000 AND 3500;
+
+/* 
+Prueba:
+SELECT nombre, edad, salario
+FROM empleados
+WHERE salario >= 3000 AND salario <= 3500;
+
+SELECT nombre, direccion, salario
+FROM empleados
+WHERE salario > 1500 AND salario <=3000;
+*/
 
 --? 3. Índice único en nombre de departamento:
   --? Crea un índice único. idx_departamentos_nombre_unique sobre la columna nombre de la tabla departamentos para evitar nombres de departamento duplicados.
