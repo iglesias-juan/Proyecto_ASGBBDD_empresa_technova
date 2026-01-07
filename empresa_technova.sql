@@ -269,3 +269,67 @@ REVOKE SELECT, INSERT, UPDATE ON empresa_technova.empleados FROM 'rol_editor_emp
 
 DROP ROLE 'rol_consulta';
 DROP ROLE 'rol_editor_empleados';
+
+--! 8) Triggers.
+
+--? Crea mecanismos automáticos para auditar y controlar reglas de negocio.
+--? 1. Tabla de auditorías de salarios:
+  --? Crea una tabla empleados_salario_log con los campos:
+    --? id_log (INT, PRIMARY KEY, autoincremental si tu SGBD lo permite)
+    --? id_empleado (INT)
+    --? salario_anterior (DECIMAL(10,2))
+    --? salario_nuevo (DECIMAL(10,2))
+    --? fecha_cambio (DATETIME o TIMESTAMP)
+    --? usuario_bd (VARCHAR(50)) - para guardar el usuario de BD que hizo el cambio (si tu SGBD lo permite con funciones del tipo CURRENT_USER)
+
+CREATE TABLE empleados_salario_log (
+  id_log INT AUTO_INCREMENT PRIMARY KEY,
+  id_empleado INT NOT NULL,
+  salario_anterior DECIMAL(10,2) NOT NULL,
+  salario_nuevo DECIMAL(10,2) NOT NULL,
+  fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  usuario_bd VARCHAR(50) DEFAULT CURRENT_USER
+);
+
+--? 2. Trigger de auditoría en UPDATE de salario:
+  --? Crea un TRIGGER AFTER UPDATE sobre la tabla empleados que:
+    --? Se dispare solo cuando el salario cambie.
+    --? Inserte un registro en empleados_salario_log con:
+      --? id del empleado
+      --? salario anterior
+      --? salario nuevo
+      --? fecha/hora del cambio
+      --? usuario de BD que realizó la operación.
+
+DELIMITER $$
+
+CREATE TRIGGER trg_auditoria_salario
+AFTER UPDATE ON empleados
+FOR EACH ROW
+BEGIN
+
+  IF OLD.salario <> NEW.salario THEN
+    INSERT INTO empleados_salario_log (
+      id_empleado,
+      salario_anterior,
+      salario_nuevo,
+      fecha_cambio,
+      usuario_bd
+    )
+    VALUES (
+      NEW.id,
+      OLD.salario,
+      NEW.salario,
+      CURRENT_TIMESTAMP,
+      CURRENT_USER()
+    );
+  END IF;
+END$$
+
+DELIMITER;
+
+  --? Realiza un UPDATE de salario sobre algún empleado y verifica que el trigger ha insertado el registro en la tabla de log.
+
+UPDATE empleados
+SET salario = 3350.33
+WHERE nombre = 'Juan Iglesias';
