@@ -182,3 +182,54 @@ FROM vista_resumen_salarios
 WHERE media_salarial > 2000;
 
 --! 7) Roles y permisos.
+
+--? Crea los siguientes roles:
+  --? rol_consulta con permisos de lectura.
+
+CREATE ROLE 'rol_consulta';
+GRANT SELECT ON empresa_technova.* TO 'rol_consulta';
+
+  --? rol_editor_empleados con permisos de SELECT e INSERT/UPDATE en empleados.
+
+CREATE ROLE 'rol_editor_empleados';
+GRANT SELECT, INSERT, UPDATE ON empresa_technova.empleados TO 'rol_editor_empleados';
+
+--? Concede permisos a los roles:
+  --? A rol_consulta:
+    --? SELECT sobre todas las vistas creadas.
+
+GRANT SELECT ON empresa_technova.vista_empleados_activos TO 'rol_consulta';
+GRANT SELECT ON empresa_technova.vista_resumen_salarios TO 'rol_consulta';
+
+    --? SELECT sobre las tablas empleados y departamentos.
+
+GRANT SELECT ON empresa_technova.empleados TO 'rol_consulta';
+GRANT SELECT ON empresa_technova.departamentos TO 'rol_consulta';
+
+  -- ? A rol_editor_empleados:
+    --? SELECT, INSERT y UPDATE sobre empleados.
+    --? (NO conceder DELETE).
+
+GRANT SELECT, INSERT, UPDATE ON empresa_technova.empleados TO 'rol_editor_empleados';
+
+--? Asigna roles a usuarios:
+  --? Asigna rol_consulta a usuario1.
+
+GRANT 'rol_consulta' TO 'usuario1'@'localhost';
+SET DEFAULT ROLE 'rol_consulta' to 'usuario1'@'localhost';
+
+  --? Crea usuario2 y asígnale rol_editor_empleados.
+
+CREATE USER 'usuario2'@'localhost' IDENTIFIED BY '1234';
+GRANT 'rol_editor_empleados' TO 'usuario2'@'localhost';
+SET DEFAULT ROLE 'rol_editor_empleados' to 'usuario2'@'localhost';
+
+--? Prueba de permisos:
+  --? Con usuario1, verifica que puede consultar vista_empleados_activos pero no puede insertar en empleados.
+  --? Con uduario2, verifica que puede insertar/actualizar en empleados y consultar las vistas.
+
+--? Revocaciones y limpieza:
+  --? Revocar rol_editor_empleados de usuario2.
+  --? Revocar rol_consulta de usuario1.
+  --? Revocar de los roles cualquier permiso que concediste sobre las vistas y tablas.
+  --? Elimina los roles con DROP ROLE.
