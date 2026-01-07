@@ -307,7 +307,6 @@ CREATE TRIGGER trg_auditoria_salario
 AFTER UPDATE ON empleados
 FOR EACH ROW
 BEGIN
-
   IF OLD.salario <> NEW.salario THEN
     INSERT INTO empleados_salario_log (
       id_empleado,
@@ -333,3 +332,112 @@ DELIMITER;
 UPDATE empleados
 SET salario = 3350.33
 WHERE nombre = 'Juan Iglesias';
+
+--? 3. Trigger de control de salario mínimo en INSERT:
+  --? Crea un TRIGGER BEFORE INSERT sobre empleados que:
+    --? Verifique que el salario del nuevo empleado sea como mínimo 1000.
+    --? Si el salario es menor de 1000, realiza una de estas dos acciones (elige una, segñun tu SGBD):
+      --? Ajusta el salario automáticamente a 1000, o
+      --? Lanza un error que impida la inserción.
+
+DELIMITER $$
+
+CREATE TRIGGER trg_insert_salario_min
+BEFORE INSERT ON empleados
+FOR EACH ROW
+BEGIN
+  IF NEW.salario < 1000 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'No se puede insertar un empleado con salario inferior a 1000';
+  END IF;
+END$$
+
+DELIMITER;
+
+  --? Prueba el trigger intentando insertar un empleado con salario 800 y verifica el comportamiento.
+
+INSERT INTO empleados (nombre, edad, salario, direccion)
+VALUES ('Marco López', 41, 683.00, 'Avenida del Mirador de la Reina, Madrid');
+
+--? 4. Trigger en DELETE:
+  --? Crea un TRIGGER BEFORE DELETE en empleados que:
+    --? Inserte en una tabla empleados_borrados (que debes crear) los datos básicos del empleado eliminado (id, nombre, edad, salario, fecha_borrado).
+
+-- Tabla empleadop_borrados:
+CREATE TABLE empleados_borrados  (
+  id_log INT AUTO_INCREMENT PRIMARY KEY,
+  id INT NOT NULL,
+  nombre VARCHAR(30) NOT NULL,
+  edad INT NOT NULL,
+  salario DECIMAL(10,2) NOT NULL,
+  fecha_borrado TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- Trigger de auditoría para empleados eliminados:
+DELIMITER $$
+
+CREATE TRIGGER trg_auditoria_delete_empleados
+BEFORE DELETE ON empleados
+FOR EACH ROW
+BEGIN
+  INSERT INTO empleados_borrados (
+    id,
+    nombre,
+    edad,
+    salario,
+    fecha_borrado
+  )
+  VALUES (
+    OLD.id,
+    OLD.nombre,
+    OLD.edad,
+    OLD.salario,
+    CURRENT_TIMESTAMP
+  );
+END$$
+
+DELIMITER;
+
+  --? Elimina a un empleado y comprueba que aparece en empleados_borrados.
+
+INSERT INTO empleados (nombre, edad, salario, direccion)
+VALUES ('Santiago Perea', 51, 2652.00, 'Calle Musgo 1, Toledo');
+
+DELETE FROM empleados
+WHERE nombre = 'Santiago Perea';
+
+SELECT * FROM empleados_borrados
+WHERE nombre = 'Santiago Perea';
+
+--! 9) Índices.
+
+--? 1. Índice por edad en empleados:
+  --? Crea un índice llamado idx_empleados_edad sobre la columna edad de la tabla empleados.
+  --? Realiza una consulta que agrupe por edad y observa (si tu SGBD lo permite) el plan de ejecución antes y despuñes de crear el índice.
+
+
+
+--? 2. Índice en salario para consultas de rango:
+  --? Crea un índice idx_empleados_salario sobre la columna salario.
+  --? Ejecuta varias consultas que filtren por rangos de salario (por ejemplo, WHERE salario BETWEEN 1500 AND 2500) y observa la mejora.
+
+
+
+--? 3. Índice único en nombre de departamento:
+  --? Crea un índice único. idx_departamentos_nombre_unique sobre la columna nombre de la tabla departamentos para evitar nombres de departamento duplicados.
+  --? Intenta insertar un departamento con un nombre ya existente y comprueba que el SGBD no lo permite.
+
+
+
+--? 4. Índice compuesto:
+  --? Crea un índice compuesto idx_empleados_edad_salario sobre (edad, salario).
+  --? Realiza una consulta que filtre por edad y ordene por salario y comprueba el uso del índice (si tu SGBD permite ver el plan de ejecución).
+
+
+
+--! 10) Copias de seguridad y restauración (Backup & Recovery).
+
+--? Define y documenta cómo harías las copias de seguridad de la base de datos de empresa_technova.
+--? Restauración de la base de datos desde un backup.
+  --? Escribe el comando que utilizarías para restaurar la base de datos empresa_technova a partir del fichero backup generado.
+  --? Explica brevemente en qué situaciones usarías esta restauración.
