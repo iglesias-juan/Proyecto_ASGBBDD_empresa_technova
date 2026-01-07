@@ -216,20 +216,56 @@ GRANT SELECT, INSERT, UPDATE ON empresa_technova.empleados TO 'rol_editor_emplea
   --? Asigna rol_consulta a usuario1.
 
 GRANT 'rol_consulta' TO 'usuario1'@'localhost';
-SET DEFAULT ROLE 'rol_consulta' to 'usuario1'@'localhost';
 
   --? Crea usuario2 y asígnale rol_editor_empleados.
 
 CREATE USER 'usuario2'@'localhost' IDENTIFIED BY '1234';
 GRANT 'rol_editor_empleados' TO 'usuario2'@'localhost';
-SET DEFAULT ROLE 'rol_editor_empleados' to 'usuario2'@'localhost';
 
 --? Prueba de permisos:
   --? Con usuario1, verifica que puede consultar vista_empleados_activos pero no puede insertar en empleados.
+
+--? usuario1:
+-- Consulta:
+SELECT * FROM vista_empleados_activos;
+-- Insertar:
+INSERT INTO empleados (nombre, edad, salario, direccion) VALUES
+('Diego Filgueira', 33, 2467.45, 'Calle Camilo José Cela 45, Pontevedra');
+
   --? Con uduario2, verifica que puede insertar/actualizar en empleados y consultar las vistas.
+
+--? usuario2:
+-- Insertar:
+INSERT INTO empleados (nombre, edad, salario, direccion) VALUES
+('Diego Filgueira', 33, 2467.45, 'Calle Camilo José Cela 45, Pontevedra');
+-- Actualizar:
+UPDATE empleados
+SET edad = 34
+WHERE nombre = 'Diego Filgueira';
+-- Consultar:
+SELECT * FROM vista_empleados_activos;
+SELECT * FROM vista_resumen_salarios;
 
 --? Revocaciones y limpieza:
   --? Revocar rol_editor_empleados de usuario2.
+
+REVOKE 'rol_editor_empleados' FROM 'usuario2'@'localhost';
+
   --? Revocar rol_consulta de usuario1.
+
+REVOKE 'rol_consulta' FROM 'usuario1'@'localhost';
+
   --? Revocar de los roles cualquier permiso que concediste sobre las vistas y tablas.
+
+-- rol_consulta:
+REVOKE SELECT ON empresa_technova.vista_empleados_activos FROM 'rol_consulta';
+REVOKE SELECT ON empresa_technova.vista_resumen_salarios FROM 'rol_consulta';
+REVOKE SELECT ON empresa_technova.empleados FROM 'rol_consulta';
+REVOKE SELECT ON empresa_technova.departamentos FROM 'rol_consulta';
+-- rol_editor_empleados:
+REVOKE SELECT, INSERT, UPDATE ON empresa_technova.empleados FROM 'rol_editor_empleados';
+
   --? Elimina los roles con DROP ROLE.
+
+DROP ROLE 'rol_consulta';
+DROP ROLE 'rol_editor_empleados';
