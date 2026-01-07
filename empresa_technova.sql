@@ -138,3 +138,47 @@ ROLLBACK TO savepoint1;
 --? Ejecuta COMMIT para confirmar los cambios reales.
 
 COMMIT;
+
+--! 6) Vistas (Views).
+
+--? Crea una vista llamada vista_empleados_activos que muestre:
+  --? id, nombre, edad, salario y nombre del departamento (usa JOIN entre empleados y departamentos).
+  --? La vista debe excluir empleados con salario < 1500.
+
+CREATE VIEW vista_empleados_activos AS
+SELECT
+  empleados.id,
+  empleados.nombre,
+  empleados.edad,
+  empleados.salario,
+  departamentos.nombre AS departamento
+FROM empleados
+JOIN departamentos
+ON empleados.id = departamentos.id_empleado
+WHERE empleados.salario >= 1500;
+
+--? Crea otra vista_resumen_salarios que muestre por edad:
+  --? edad, total_empleados y salario_medio (usa COUNT(*) y AVG(salario)).
+
+CREATE VIEW vista_resumen_salarios AS
+SELECT
+  edad,
+  COUNT(*) AS total,
+  AVG(salario) AS media_salarial
+FROM empleados
+GROUP BY edad;
+
+--? Realiza consultas sobre ambas vistas:
+  --? Todos los empleados activos ordenados por salario descendente (desde vista_empleados_activos).
+
+SELECT *
+FROM vista_empleados_activos
+ORDER BY salario DESC;
+
+  --? Edades con salario medio > 2000 desde vista_resumen_salarios.
+
+SELECT *
+FROM vista_resumen_salarios
+WHERE media_salarial > 2000;
+
+--! 7) Roles y permisos.
