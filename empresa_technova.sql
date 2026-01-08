@@ -448,7 +448,7 @@ CREATE INDEX idx_empleados_salario
 ON empleados(salario);
 
 --* SHOW INDEX FROM empleados;
---* Para comporobar si los índices sobre la tabla "empleados" se han creado correctamente.
+--* Para comporobar si el índice sobre la tabla "empleados" se han creado correctamente.
 
 -- Consulta con el índice:
 EXPLAIN
@@ -469,15 +469,44 @@ WHERE salario > 1500 AND salario <=3000;
 
 --? 3. Índice único en nombre de departamento:
   --? Crea un índice único. idx_departamentos_nombre_unique sobre la columna nombre de la tabla departamentos para evitar nombres de departamento duplicados.
+
+CREATE UNIQUE INDEX idx_departamentos_nombre_unique
+ON departamentos(nombre);
+
+--* SHOW INDEX FROM departamentos;
+--* Para comporobar si el índice sobre la tabla "departamentos" se han creado correctamente.
+--* Mediante un índice UNIQUE garantizamos la integridad de los datos. Entre las características:
+  --* Mejora búsquedas en esa columna.
+  --* Garantiza unicidad.
+  --* Es preferible a validar duplicados manualmente con SELECT.
+
   --? Intenta insertar un departamento con un nombre ya existente y comprueba que el SGBD no lo permite.
 
-
+INSERT INTO departamentos (id_dep, nombre, id_empleado)
+VALUES (1, 'IT', 3);
 
 --? 4. Índice compuesto:
   --? Crea un índice compuesto idx_empleados_edad_salario sobre (edad, salario).
+
+CREATE INDEX idx_empleados_edad_salario
+ON empleados(edad, salario);
+
+--* El índice sigue el orden indicado (en este caso, primero edad y en segundo término salario).
+
   --? Realiza una consulta que filtre por edad y ordene por salario y comprueba el uso del índice (si tu SGBD permite ver el plan de ejecución).
 
+-- Con EXPLAIN:
+EXPLAIN
+SELECT nombre, edad, salario
+FROM empleados
+WHERE edad = 36
+ORDER BY salario;
 
+-- Sin EXPLAIN:
+SELECT nombre, edad, salario
+FROM empleados
+WHERE edad = 36
+ORDER BY salario;
 
 --! 10) Copias de seguridad y restauración (Backup & Recovery).
 
