@@ -485,6 +485,8 @@ ON departamentos(nombre);
 INSERT INTO departamentos (id_dep, nombre, id_empleado)
 VALUES (1, 'IT', 3);
 
+--* MySQL devuelve: #1062 - Entrada duplicada '1' para la clave 'PRIMARY'.
+
 --? 4. Índice compuesto:
   --? Crea un índice compuesto idx_empleados_edad_salario sobre (edad, salario).
 
@@ -499,18 +501,34 @@ ON empleados(edad, salario);
 EXPLAIN
 SELECT nombre, edad, salario
 FROM empleados
-WHERE edad = 36
+WHERE edad = 33
 ORDER BY salario;
 
 -- Sin EXPLAIN:
 SELECT nombre, edad, salario
 FROM empleados
-WHERE edad = 36
+WHERE edad = 33
 ORDER BY salario;
 
 --! 10) Copias de seguridad y restauración (Backup & Recovery).
 
 --? Define y documenta cómo harías las copias de seguridad de la base de datos de empresa_technova.
+
+/*
+1) BACKUP COMPLETO.
+ El backup completo tiene como objetivo gatantizar una copia de seguridad de la totalidad de la base de datos antes de cualquier cambio o evento catastrófico.
+ Podemos realizar el backup tanto a través del entorno gráfico como a través de la línea de comandos.
+  1.1) A través del entorno gráfico:
+      - Seleccionar la base de datos "empresa_technova".
+      - Pestaña "Exportar" (Podemos elegir entre "Método de exportación: rápido o personalizado" y el "tipo de formato: SQL entre otros") 
+      - Podemos guardarlo ejecutando la operación "Exportar" nombrando el archivo por ejemplo como "bkup_empresa_technova.sql".
+  1.2) A través de línea de comandos:
+      - En el Panel de Control de XAMPP abrimos la SHELL, donde podemos ejecutar los siguientes comandos:
+        - mysqldump -u root -p empresa_technova > bkup_empresa_technova.sql (básico).
+        - mysqldump -u root -p --routines --triggers empresa_technova > bkup_completo.sql (incluyendo triggers y rutinas).
+        --* En ambos casos utilizamos "-p" cuando el usuario utilice contraseña.
+
 --? Restauración de la base de datos desde un backup.
   --? Escribe el comando que utilizarías para restaurar la base de datos empresa_technova a partir del fichero backup generado.
   --? Explica brevemente en qué situaciones usarías esta restauración.
+
