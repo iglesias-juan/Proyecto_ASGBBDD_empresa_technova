@@ -527,8 +527,47 @@ ORDER BY salario;
         - mysqldump -u root -p empresa_technova > bkup_empresa_technova.sql (básico).
         - mysqldump -u root -p --routines --triggers empresa_technova > bkup_completo.sql (incluyendo triggers y rutinas).
         --* En ambos casos utilizamos "-p" cuando el usuario utilice contraseña.
+*/
 
 --? Restauración de la base de datos desde un backup.
   --? Escribe el comando que utilizarías para restaurar la base de datos empresa_technova a partir del fichero backup generado.
   --? Explica brevemente en qué situaciones usarías esta restauración.
 
+/*
+En cuanto a la restauración de la base de datos desde un backup, podemos diferenciar entre una restauración completa o parcial.
+
+1) Restauración completa.
+La realizamos para restaurar toda la base de datos desde un backup, recuperando la base de datos a un estado concreto en un momento determinado. Su utilización es recomendable en los siguientes casos:
+  - Desastre o corrupción total del servidor o base de datos (se corrompe el archivo "ibdata1" de InnoDB o se elimina toda la base de datos).
+  - Errores masivos de datos (Se utiliza DELETE o UPDATE afectando a todas las tablas).
+  - Migración o traslado del servidor.
+  - Pruebas fallidas con repercusión fatal para la base de datos.
+En cuanto a sus ventajas:
+  - Recuperación de todo, de manera segura y consistente.
+  - Garantiza la integridad de datos, relaciones y triggers.
+En cuanto a sus desventajas:
+  - Se pierden cambios recientes que se hicieron después del backup completo.
+  - Es más radical que una recuperación parcial.
+
+Procedimiento:
+  1.1) A través del entorno gráfico:
+  1.2) A través de línea de comandos:
+
+2) Restauración parcial.
+Su finalidad es la recuperación de una tabla determinada o un conjunto de filas específicas, dejando sin alteración alguna los datos recientes de otras tablas o filas. Es recomendable su utilización en los siguientes casos:
+  - Error humano (Como por ejemplo la eliminación de una tabla determinada o de un usuario).
+  - Corrupción localizada (Al contrario de lo que sucede en la corrupción de la totalidad de la base de datos, aquí solo un conjunto de registros de una tabla se corrompen).
+  - Necesidad de datos históricos (Para restaurar datos antiguos sin afectar a los nuevos registros insertados).
+  - Recuperación para una auditoría o pruebas.
+En cuanto a sus ventajas:
+  - Mantiene cambios recientes.
+  - Tiene menos riesgo para la base de datos que una restauración completa.
+En cuanto a sus desventajas:
+  - Se debe realizar con cuidado de copiar únicamente lo necesario.
+  - Debemos asegurarnos de no alterar la integridad cuando hay relaciones entre tablas.
+
+Procedimiento:
+  1.1) A través del entorno gráfico:
+  1.2) A través de línea de comandos:
+
+*/
