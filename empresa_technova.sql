@@ -518,10 +518,12 @@ ORDER BY salario;
 1) BACKUP COMPLETO.
  El backup completo tiene como objetivo gatantizar una copia de seguridad de la totalidad de la base de datos antes de cualquier cambio o evento catastrófico.
  Podemos realizar el backup tanto a través del entorno gráfico como a través de la línea de comandos.
+
   1.1) A través del entorno gráfico:
       - Seleccionar la base de datos "empresa_technova".
       - Pestaña "Exportar" (Podemos elegir entre "Método de exportación: rápido o personalizado" y el "tipo de formato: SQL entre otros") 
       - Podemos guardarlo ejecutando la operación "Exportar" nombrando el archivo por ejemplo como "bkup_empresa_technova.sql".
+
   1.2) A través de línea de comandos:
       - En el Panel de Control de XAMPP abrimos la SHELL, donde podemos ejecutar los siguientes comandos:
         - mysqldump -u root -p empresa_technova > bkup_empresa_technova.sql (básico).
@@ -550,8 +552,13 @@ En cuanto a sus desventajas:
   - Es más radical que una recuperación parcial.
 
 Procedimiento:
+
   1.1) A través del entorno gráfico:
+    - Seleccionar la base de datos "empresa_technova".
+    - Pestaña "Importar" (En "Archivo a importar" podemos seleccionar el archivo SQL, y también permite realizar una importación parcial).
+
   1.2) A través de línea de comandos:
+    - mysql -u root -p empresa_technova < bkup_empresa_technova.sql (en el caso de que la base de datos exista previamente, pues en caso contrario habría que crearla).
 
 2) Restauración parcial.
 Su finalidad es la recuperación de una tabla determinada o un conjunto de filas específicas, dejando sin alteración alguna los datos recientes de otras tablas o filas. Es recomendable su utilización en los siguientes casos:
@@ -567,7 +574,23 @@ En cuanto a sus desventajas:
   - Debemos asegurarnos de no alterar la integridad cuando hay relaciones entre tablas.
 
 Procedimiento:
-  1.1) A través del entorno gráfico:
-  1.2) A través de línea de comandos:
+  1.1) Recuperación de una tabla completa:
+    - En el backup realizado, copiar solo la parte de CREATE TABLE e INSERT para la tabla determinada.
+    - Crear una base de datos temportal (P.ej: "backup_empresa_technova").
+    - Importar el backup completo en esa base de datos temporal.
+    - Copiar la tabla en cuestión a la base de datos original.
+CREATE TABLE departamentos LIKE bkup_empresa_technova.departamentos;
+INSERT INTO departamentos SELECT * FROM bkup_empresa_technova.departamentos;
+
+  1.2) Insertar registros que faltan:
+INSERT INTO empresa_technova.empleados (id, nombre, edad, salario, direccion)
+SELECT id, nombre, edad, salario, direccion
+FROM bkup_empresa_technova.empleados
+WHERE id NOT IN (SELECT id FROM empresa_technova.empleados);
+
+  1.3) Para comparar datos entre la base de datos original y el backup:
+SELECT * 
+FROM bkup_empresa_technova.empleados
+WHERE id NOT IN (SELECT id FROM empresa_technova.empleados);
 
 */
